@@ -1,0 +1,7 @@
+configSecret:
+  create: true
+  name: "oci-variables"
+  namespace: ""
+
+config:
+  OCI_B64ENCODED_CREDENTIALS: Cg== 
