@@ -1,0 +1,23 @@
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: OCIMachineTemplate
+metadata:
+  name: {{ include "ocimachinetemplate.worker.name" . }}
+spec:
+  template:
+    spec:
+      {{- if not (quote .Values.worker.imageId | empty) }}
+      imageId: {{ .Values.worker.imageId }}
+      {{- end }}
+      shape: {{ .Values.worker.shape }}
+      {{- if .Values.worker.ocpus }}
+      ocpus: {{ .Values.worker.ocpus }}
+      {{- end }}
+      {{- if .Values.worker.memoryInGBs }}
+      memoryInGBs: {{ .Values.worker.memoryInGBs }}
+      {{- end }}
+      {{- if .Values.worker.bootVolumeInGBs }}
+      bootVolumeInGBs: {{ .Values.worker.bootVolumeInGBs }}
+      {{- end }}
+      {{- if not (quote .Values.sshPublicKey | empty) }}
+      sshPublicKey: {{ .Values.sshPublicKey }}
+      {{- end }} 

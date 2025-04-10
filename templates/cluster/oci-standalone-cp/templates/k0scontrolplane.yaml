@@ -1,0 +1,113 @@
+apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+kind: K0sControlPlane
+metadata:
+  name: {{ include "k0scontrolplane.name" . }}
+spec:
+  replicas: {{ .Values.controlPlaneNumber }}
+  version: {{ .Values.k0s.version }}
+  k0sConfigSpec:
+    args:
+      - --enable-worker
+      - --enable-cloud-provider
+      - --kubelet-extra-args="--cloud-provider=external"
+      - --disable-components=konnectivity-server
+    files:
+      {{- if .Values.k0s.auth.enabled }}
+      - content: |
+          {{- with .Values.k0s.auth.config }}
+          {{- toYaml . | nindent 14 }}
+          {{- end }}
+        permissions: "0644"
+        path: /etc/k0s/auth/auth-config.yaml
+      {{- end }}
+    k0s:
+      apiVersion: k0s.k0sproject.io/v1beta1
+      kind: ClusterConfig
+      metadata:
+        name: k0s
+      spec:
+        api:
+          extraArgs:
+            anonymous-auth: "true"
+            {{- if .Values.k0s.auth.enabled }}
+            authentication-config: "/etc/k0s/auth/auth-config.yaml"
+            {{- end }}
+          {{- with .Values.k0s.api.extraArgs }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        network:
+          provider: calico
+          calico:
+            mode: ipip
+        extensions:
+          helm:
+            repositories:
+              - name: oci-cloud-controller-manager
+                {{- if .Values.extensions.chartRepository }}
+                url: {{ .Values.extensions.chartRepository }}
+                {{- else }}
+                url: https://oracle.github.io/oci-cloud-controller-manager
+                {{- end }}
+              - name: oci-csi-driver
+                {{- if .Values.extensions.chartRepository }}
+                url: {{ .Values.extensions.chartRepository}}
+                {{- else }}
+                url: https://oracle.github.io/oci-csi-driver
+                {{- end }}
+            charts:
+              - name: oci-cloud-controller-manager
+                namespace: kube-system
+                chartname: oci-cloud-controller-manager/oci-cloud-controller-manager
+                version: "0.0.1"
+                values: |
+                  nodeSelector:
+                    node-role.kubernetes.io/control-plane: "true"
+                  image:
+                    {{- if .Values.extensions.imageRepository }}
+                    repository: {{ .Values.extensions.imageRepository }}
+                    {{- end }}
+                    tag: latest
+                  args:
+                    - --v=2
+                    - --cloud-provider=oci
+                    - --cluster-cidr={{ first .Values.clusterNetwork.pods.cidrBlocks }}
+                    - --allocate-node-cidrs=true
+                    - --cluster-name={{ include "cluster.name" . }}
+              - name: oci-csi-driver
+                namespace: kube-system
+                chartname: oci-csi-driver/oci-csi-driver
+                version: 0.1.0
+                values: |
+                  {{- if .Values.extensions.imageRepository }}
+                  image:
+                    repository: {{ .Values.extensions.imageRepository }}
+                  sidecars:
+                    provisioner:
+                      image:
+                        repository: {{ .Values.extensions.imageRepository }}
+                    attacher:
+                      image:
+                        repository: {{ .Values.extensions.imageRepository }}
+                    snapshotter:
+                      image:
+                        repository: {{ .Values.extensions.imageRepository }}
+                    livenessProbe:
+                      image:
+                        repository: {{ .Values.extensions.imageRepository }}
+                    resizer:
+                      image:
+                        repository: {{ .Values.extensions.imageRepository }}
+                    nodeDriverRegistrar:
+                      image:
+                        repository: {{ .Values.extensions.imageRepository }}
+                  {{- end }}
+                  defaultStorageClass:
+                    enabled: true
+                  node:
+                    kubeletPath: /var/lib/k0s/kubelet
+  machineTemplate:
+    infrastructureRef:
+      apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+      kind: OCIMachineTemplate
+      name: {{ include "ocimachinetemplate.controlplane.name" . }}
+      namespace: {{ .Release.Namespace }} 

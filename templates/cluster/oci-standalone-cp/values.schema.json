@@ -1,0 +1,214 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "A KCM template to deploy a k0s cluster on Oracle Cloud Infrastructure with bootstrapped control plane nodes.",
+  "type": "object",
+  "required": [
+    "controlPlaneNumber",
+    "workersNumber",
+    "compartmentId",
+    "region",
+    "clusterIdentity"
+  ],
+  "properties": {
+    "controlPlaneNumber": {
+      "description": "The number of the control plane machines",
+      "type": "number",
+      "minimum": 1
+    },
+    "workersNumber": {
+      "description": "The number of the worker machines",
+      "type": "number",
+      "minimum": 1
+    },
+    "clusterNetwork": {
+      "type": "object",
+      "properties": {
+        "pods": {
+          "type": "object",
+          "properties": {
+            "cidrBlocks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            }
+          }
+        },
+        "services": {
+          "type": "object",
+          "properties": {
+            "cidrBlocks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            }
+          }
+        }
+      }
+    },
+    "clusterLabels": {
+      "type": "object",
+      "description": "Labels to apply to the cluster",
+      "required": [],
+      "additionalProperties": true
+    },    
+    "clusterAnnotations": {
+      "type": "object",
+      "description": "Annotations to apply to the cluster",
+      "required": [],
+      "additionalProperties": true
+    },    
+    "compartmentId": {
+      "description": "OCI compartment ID to deploy the cluster in",
+      "type": "string"
+    },
+    "region": {
+      "description": "OCI region to deploy the cluster in",
+      "type": "string"
+    },
+    "sshPublicKey": {
+      "description": "The SSH public key to connect to your instances",
+      "type": ["string", "null"]
+    },
+    "vcnId": {
+      "description": "The ID of the Virtual Cloud Network",
+      "type": ["string", "null"]
+    },
+    "subnetId": {
+      "description": "The ID of the subnet",
+      "type": ["string", "null"]
+    },
+    "clusterIdentity": {
+      "type": "object",
+      "description": "OCI Cluster Identity object reference",
+      "required": [
+        "name",
+        "kind"
+      ],
+      "properties": {
+        "name": {
+          "description": "OCI ClusterIdentity object name",
+          "type": "string"
+        },
+        "kind": {
+          "description": "OCI ClusterIdentity object kind",
+          "type": "string"
+        }
+      }
+    },
+    "controlPlane": {
+      "description": "The configuration of the control plane machines",
+      "type": "object",
+      "required": [
+        "shape"
+      ],
+      "properties": {
+        "imageId": {
+          "description": "The ID of the image",
+          "type": "string"
+        },
+        "shape": {
+          "description": "The shape of the instance",
+          "type": "string"
+        },
+        "ocpus": {
+          "description": "The number of OCPUs for flex shapes",
+          "type": "number"
+        },
+        "memoryInGBs": {
+          "description": "The amount of memory in GBs for flex shapes",
+          "type": "number"
+        },
+        "bootVolumeInGBs": {
+          "description": "The size of the boot volume in GBs",
+          "type": "number"
+        }
+      }
+    },
+    "worker": {
+      "description": "The configuration of the worker machines",
+      "type": "object",
+      "required": [
+        "shape"
+      ],
+      "properties": {
+        "imageId": {
+          "description": "The ID of the image",
+          "type": "string"
+        },
+        "shape": {
+          "description": "The shape of the instance",
+          "type": "string"
+        },
+        "ocpus": {
+          "description": "The number of OCPUs for flex shapes",
+          "type": "number"
+        },
+        "memoryInGBs": {
+          "description": "The amount of memory in GBs for flex shapes",
+          "type": "number"
+        },
+        "bootVolumeInGBs": {
+          "description": "The size of the boot volume in GBs",
+          "type": "number"
+        }
+      }
+    },
+    "k0s": {
+      "description": "The configuration of the k0s instances",
+      "type": "object",
+      "properties": {
+        "version": {
+          "description": "The version of k0s to use",
+          "type": "string"
+        },
+        "api": {
+          "description": "Settings for the Kubernetes API server",
+          "type": "object",
+          "properties": {
+            "extraArgs": {
+              "description": "Extra arguments to pass to the API server",
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "auth": {
+          "description": "Authentication settings for the Kubernetes API server",
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "description": "Whether to enable additional authentication settings",
+              "type": "boolean"
+            },
+            "config": {
+              "description": "The authentication configuration",
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "extensions": {
+      "description": "Custom repository settings for k0s extensions",
+      "type": "object",
+      "properties": {
+        "chartRepository": {
+          "description": "Custom Helm chart repository URL",
+          "type": "string"
+        },
+        "imageRepository": {
+          "description": "Custom container image repository URL",
+          "type": "string"
+        }
+      }
+    }
+  }
+} 

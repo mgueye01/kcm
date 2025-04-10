@@ -78,6 +78,7 @@ spec:
   - name: cluster-api-provider-gcp
   - name: cluster-api-provider-docker
   - name: cluster-api-provider-openstack
+  - name: cluster-api-provider-oci
   - name: cluster-api-provider-k0sproject-k0smotron
   - name: projectsveltos
   release: kcm-0-2-0

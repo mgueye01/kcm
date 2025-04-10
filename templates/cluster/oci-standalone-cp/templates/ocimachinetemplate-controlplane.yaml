@@ -1,0 +1,23 @@
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: OCIMachineTemplate
+metadata:
+  name: {{ include "ocimachinetemplate.controlplane.name" . }}
+spec:
+  template:
+    spec:
+      {{- if not (quote .Values.controlPlane.imageId | empty) }}
+      imageId: {{ .Values.controlPlane.imageId }}
+      {{- end }}
+      shape: {{ .Values.controlPlane.shape }}
+      {{- if .Values.controlPlane.ocpus }}
+      ocpus: {{ .Values.controlPlane.ocpus }}
+      {{- end }}
+      {{- if .Values.controlPlane.memoryInGBs }}
+      memoryInGBs: {{ .Values.controlPlane.memoryInGBs }}
+      {{- end }}
+      {{- if .Values.controlPlane.bootVolumeInGBs }}
+      bootVolumeInGBs: {{ .Values.controlPlane.bootVolumeInGBs }}
+      {{- end }}
+      {{- if not (quote .Values.sshPublicKey | empty) }}
+      sshPublicKey: {{ .Values.sshPublicKey }}
+      {{- end }} 

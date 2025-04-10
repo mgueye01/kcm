@@ -1,0 +1,71 @@
+# Cluster parameters
+controlPlaneNumber: 3
+workersNumber: 2
+
+clusterNetwork:
+  pods:
+    cidrBlocks:
+      - "10.244.0.0/16"
+  services:
+    cidrBlocks:
+      - "10.96.0.0/12"
+
+clusterLabels: {}
+clusterAnnotations: {}
+
+# OCI cluster parameters
+compartmentId: ""
+region: ""
+sshPublicKey: ""
+vcnId: ""
+subnetId: ""
+clusterIdentity:
+  name: ""
+  kind: "OCIClusterIdentity"
+
+# OCI machines parameters
+controlPlane:
+  imageId: ""
+  shape: "VM.Standard.E4.Flex"
+  ocpus: 2
+  memoryInGBs: 16
+  bootVolumeInGBs: 50
+
+worker:
+  imageId: ""
+  shape: "VM.Standard.E4.Flex"
+  ocpus: 2  
+  memoryInGBs: 16
+  bootVolumeInGBs: 100
+
+# K0s parameters
+k0s:
+  version: v1.31.5+k0s.0
+  api:
+    extraArgs: {}
+  auth:
+    enabled: false
+    config:
+      apiVersion: apiserver.config.k8s.io/v1beta1
+      kind: AuthenticationConfiguration
+      jwt:
+        - issuer:
+            url: "https://your-jwt-issuer.com"
+            audiences:
+            - "your-audience"
+          claimMappings:
+            username:
+              claim: email
+              prefix: ""
+            groups:
+              claim: groups
+              prefix: ""
+          userValidationRules:
+          - expression: "!user.username.startsWith('system:')"
+            message: "username cannot use reserved system: prefix"
+
+# extensions defines custom Helm and image repositories to use for pulling
+# k0s extensions.
+extensions:
+  chartRepository: ""
+  imageRepository: "" 

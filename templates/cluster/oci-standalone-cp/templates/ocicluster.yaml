@@ -1,0 +1,40 @@
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: OCICluster
+metadata:
+  name: {{ include "cluster.name" . }}
+  finalizers:
+    - k0rdent.mirantis.com/cleanup
+spec:
+  compartmentId: {{ .Values.compartmentId }}
+  region: {{ .Values.region }}
+  identityRef:
+    kind: {{ .Values.clusterIdentity.kind }}
+    name: {{ .Values.clusterIdentity.name }}
+  networking:
+    vcnId: {{ .Values.vcnId }}
+    subnetId: {{ .Values.subnetId }}
+    networkSecurityGroups:
+      - name: "k0s-cluster-sg"
+        ingressRules:
+          - description: "API server"
+            protocol: "6"
+            source: "0.0.0.0/0"
+            stateless: false
+            tcpOptions:
+              sourcePortRange:
+                min: 1
+                max: 65535
+              destinationPortRange:
+                min: 6443
+                max: 6443
+          - description: "k0s controller join API"
+            protocol: "6"
+            source: "0.0.0.0/0"
+            stateless: false
+            tcpOptions:
+              sourcePortRange:
+                min: 1
+                max: 65535
+              destinationPortRange:
+                min: 9443
+                max: 9443 
